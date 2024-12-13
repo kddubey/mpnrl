@@ -6,7 +6,6 @@ Doesn't assume the texts are de-duplicated.
 from collections import defaultdict
 from typing import Iterable
 
-from datasets import Dataset
 from sentence_transformers.data_collator import SentenceTransformerDataCollator
 
 
@@ -22,7 +21,7 @@ def group_positives_by_anchor(
 
 
 class MPNRLDataCollator(SentenceTransformerDataCollator):
-    def __init__(self, dataset: Dataset, *args, **kwargs):
+    def __init__(self, dataset: Iterable[dict[str, str]], *args, **kwargs):
         super().__init__(*args, **kwargs)
         # TODO: SentenceTransformerDataCollator actually assumes that first is anchor,
         # next is positive, rest are negative, regardless of the actual column names.

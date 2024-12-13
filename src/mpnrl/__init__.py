@@ -4,11 +4,10 @@ Multiple Positives and Negatives Ranking Loss
 
 __version__ = "0.1.0"
 
-from .collator import group_positives_by_anchor, MPNRLDataCollator
-from .loss import MultiplePositivesNegativesRankingLoss
+from . import collator
+from . import loss
 
 __all__ = [
-    "group_positives_by_anchor",
-    "MPNRLDataCollator",
-    "MultiplePositivesNegativesRankingLoss",
+    "collator",
+    "loss",
 ]
