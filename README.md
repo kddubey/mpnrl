@@ -16,7 +16,7 @@ NOTE: this isn't meant to be a stable Python package. There are many TODOs.
 
 ## Why
 
-No-duplicates sampling hurts training throughput if there's high variance in the number
+No-duplicates sampling hurts training throughput if there's high skewnewss in the number
 of duplicated anchors. See the numbers and plots for MNRL + AllNLI in
 [`./demos/compare_dataloaders.ipynb`](./demos/compare_dataloaders.ipynb).
 
