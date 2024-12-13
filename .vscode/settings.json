@@ -1,0 +1,10 @@
+{
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true,
+    "rewrap.autoWrap.enabled": true,
+    "autoDocstring.docstringFormat": "numpy",
+    "autoDocstring.startOnNewLine": true,
+    "editor.rulers": [
+        88
+    ]
+}
