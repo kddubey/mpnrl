@@ -1,7 +1,7 @@
 # Multiple Positives and Negatives Ranking Loss
 
-TLDR: on AllNLI, training w/ MPNRL does quite well compared to MNRL in terms of training
-throughput and memory stability. It's on par with MNRL in terms of task/statistical
+TLDR: on AllNLI, training w/ MPNRL has higher training throughput and better memory
+utilization than training w/ MNRL. They're on par in terms of task/statistical
 performance, but I'll need to run many more experiments.
 
 
