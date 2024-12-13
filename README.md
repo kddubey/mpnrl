@@ -16,8 +16,8 @@ NOTE: this isn't meant to be a stable Python package. There are many TODOs.
 
 ## Why
 
-No-duplicates sampling hurts training throughput if there are many duplicates. See the
-numbers and plots for MNRL + AllNLI in
+No-duplicates sampling hurts training throughput if there's high variance in the number
+of duplicated anchors. See the numbers and plots for MNRL + AllNLI in
 [`./demos/compare_dataloaders.ipynb`](./demos/compare_dataloaders.ipynb).
 
 Here are CUDA memory snapshots across time for MNRL + AllNLI (first 10k triplets,
