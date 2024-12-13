@@ -1,5 +1,9 @@
 # Multiple Positives and Negatives Ranking Loss
 
+TLDR: on AllNLI, training w/ MPNRL does quite well compared to MNRL in terms of training
+throughput and memory stability. It's on par with MNRL in terms of task/statistical
+performance, but I'll need to run many more experiments.
+
 
 ## Setup
 
@@ -7,7 +11,7 @@
 python -m pip install git+https://github.com/kddubey/mpnrl.git
 ```
 
-NOTE: this isn't meant to be a stable Python package. There are many TODOs in the code.
+NOTE: this isn't meant to be a stable Python package. There are many TODOs.
 
 
 ## Why
@@ -35,7 +39,7 @@ Here are CUDA memory snapshots across time for MPNRL:
 
 Here's a comparison of time-based GPU utilization:
 
-![](./images/gpu_utilization_time.png)
+<img src="./images/gpu_utilization_time.png" alt="drawing" width="300"/>
 
 The small experiment in [`./demos/train_allnli.ipynb`](./demos/train_allnli.ipynb)
 demonstrates that task/statistical performance is on par with MNRL.
