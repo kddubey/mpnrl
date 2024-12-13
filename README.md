@@ -39,7 +39,7 @@ Here are CUDA memory snapshots across time for MPNRL:
 
 Here's a comparison of time-based GPU utilization:
 
-<img src="./images/gpu_utilization_time.png" alt="drawing" width="300"/>
+<img src="./images/gpu_utilization_time.png" alt="drawing" width="400"/>
 
 The small experiment in [`./demos/train_allnli.ipynb`](./demos/train_allnli.ipynb)
 demonstrates that task/statistical performance is on par with MNRL.
@@ -77,6 +77,8 @@ trainer = SentenceTransformerTrainer(
         train_dataset, tokenize_fn=model.tokenize
     ),
 )
+
+trainer.train()
 ```
 
 There's a small demo in [`./demos/train_allnli.ipynb`](./demos/train_allnli.ipynb).
@@ -84,8 +86,8 @@ There's a small demo in [`./demos/train_allnli.ipynb`](./demos/train_allnli.ipyn
 
 ## TODOs
 
-- [ ] `mpnrl.collator` `TODO`s
-- [ ] `mpnrl.loss` `TODO`s
+- [ ] `mpnrl.collator` `TODO`s.
+- [ ] `mpnrl.loss` `TODO`s.
 - [ ] Measure how long it takes for MNRL vs MPRNL to get to a good model
 (pearson/spearman correlation on validation data).
 - [ ] Repeat for a few datasets and study how the level of data duplication affects
