@@ -40,6 +40,9 @@ Here's a comparison of time-based GPU utilization:
 The small experiment in [`./demos/train_allnli.ipynb`](./demos/train_allnli.ipynb)
 demonstrates that task/statistical performance is on par with MNRL.
 
+In an experiment on the first 100k triplets in AllNLI and an inputted batch size of 200,
+MNRL took ~33 minutes while MPNRL took ~20 minutes. Statistical performance was similar.
+
 
 ## Usage
 
