@@ -42,6 +42,7 @@ version = {attr = "mpnrl.__version__"}
 include = ["*.py"]
 line-length = 88
 indent-width = 4
+extend-include = ["*.ipynb"]
 
 [project.urls]
 Homepage = "https://github.com/kddubey/mpnrl"
