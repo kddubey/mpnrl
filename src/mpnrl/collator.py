@@ -13,8 +13,8 @@ def group_positives_by_anchor(
     dataset: Iterable[dict[str, str]],
 ) -> dict[str, dict[str, None]]:
     anchor_to_positives = defaultdict(dict)
-    # Using a dict to de-duplicate. Not using a set so that positives and negatives are
-    # in a deterministic (insertion) order.
+    # Using a dict to de-duplicate. Not using a set so that positives are in a
+    # deterministic (insertion) order.
     for record in dataset:
         anchor_to_positives[record["anchor"]][record["positive"]] = None
     return anchor_to_positives
