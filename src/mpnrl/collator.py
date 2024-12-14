@@ -32,7 +32,6 @@ class MPNRLDataCollator(SentenceTransformerDataCollator):
         # Using a dict for deterministic (insertion) order.
         anchors = list({record["anchor"]: None for record in features})
         positives = list({record["positive"]: None for record in features})
-        negatives = list({record["negative"]: None for record in features})
 
         positive_idxs = [
             [
@@ -50,7 +49,13 @@ class MPNRLDataCollator(SentenceTransformerDataCollator):
         batch = (
             super().__call__([{"anchor": anchor} for anchor in anchors])
             | super().__call__([{"positive": positive} for positive in positives])
-            | super().__call__([{"negative": negative} for negative in negatives])
+            | (
+                {}
+                if "negative" not in features[0]
+                else super().__call__(
+                    [{"negative": record["negative"]} for record in features]
+                )
+            )
         )
         batch["label"] = positive_idxs
         return batch
