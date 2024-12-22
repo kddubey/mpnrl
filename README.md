@@ -18,7 +18,7 @@ NOTE: this isn't meant to be a stable Python package. There are many TODOs.
 
 No-duplicates sampling hurts training throughput if there's high skewnewss in the number
 of duplicated anchors. See the numbers and plots for MNRL + AllNLI in
-[`./demos/compare_dataloaders.ipynb`](./demos/compare_dataloaders.ipynb).
+[`./compare_dataloaders.ipynb`](./compare_dataloaders.ipynb).
 
 Here are CUDA memory snapshots across time for MNRL + AllNLI (first 10k triplets,
 inputted batch size of 200):
