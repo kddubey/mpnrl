@@ -197,12 +197,13 @@ def _stsb_evaluator(split: str, experiment: Experiment):
 
 
 # Values are callables so that data loading only happens when needed.
-dataset_name_to_val_evaluator_creator: dict[
-    str, Callable[[Any, Experiment], SentenceEvaluator]
-] = {"sentence-transformers/all-nli": partial(_stsb_evaluator, "validation")}
-dataset_name_to_test_evaluator_creator: dict[
-    str, Callable[[Any, Experiment], SentenceEvaluator]
-] = {"sentence-transformers/all-nli": partial(_stsb_evaluator, "test")}
+_EvaluatorCreator = Callable[[Any, Experiment], SentenceEvaluator]
+dataset_name_to_val_evaluator_creator: dict[str, _EvaluatorCreator] = {
+    "sentence-transformers/all-nli": partial(_stsb_evaluator, "validation"),
+}
+dataset_name_to_test_evaluator_creator: dict[str, _EvaluatorCreator] = {
+    "sentence-transformers/all-nli": partial(_stsb_evaluator, "test"),
+}
 
 
 def _create_trainer(
