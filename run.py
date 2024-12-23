@@ -218,7 +218,13 @@ def _create_trainer(
 
     num_steps = len(train_dataset) // experiment.per_device_train_batch_size
     logging_steps = ceil(num_steps / experiment.num_steps_to_log)
-    eval_steps = ceil(num_steps / experiment.num_evals_per_epoch)
+    if experiment.num_evals_per_epoch <= 0:
+        eval_args = dict(eval_strategy="no")
+    else:
+        eval_args = dict(
+            eval_strategy="steps",
+            eval_steps=ceil(num_steps / experiment.num_evals_per_epoch),
+        )
 
     common_training_args = dict(
         # Required arg:
@@ -230,8 +236,7 @@ def _create_trainer(
         warmup_ratio=0.1,
         fp16=False,
         bf16=_bf16(),
-        eval_strategy="steps",
-        eval_steps=eval_steps,
+        **eval_args,
         seed=experiment.seed,
         save_strategy="no",
         use_mps_device=False,
