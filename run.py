@@ -61,6 +61,13 @@ class Experiment(BaseModel):
         default=32, description="Number of pairs to sample per batch during evaluation."
     )
     num_train_epochs: int = Field(default=1)
+    num_evals_per_epoch: int = Field(
+        default=5,
+        description=(
+            "Number of times to compute the loss on validation data (and, if "
+            "applicable, run the validation evaluator)."
+        ),
+    )
     seed: int = Field(default=42)
 
     # Dataset
@@ -142,9 +149,9 @@ def _train_val_datasets(experiment: Experiment) -> tuple[Dataset, Dataset]:
 def _bf16():
     bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
     if bf16:
-        print("Using mixed precision in bf16")
+        print("\nUsing mixed precision in bf16\n")
     else:
-        print("Not using mixed precision")
+        print("\nNot using mixed precision\n")
         # B/c I hardcode fp16 = False
     return bf16
 
@@ -218,6 +225,7 @@ def _create_trainer(
 
     num_steps = len(train_dataset) // experiment.per_device_train_batch_size
     logging_steps = ceil(num_steps / experiment.num_steps_to_log)
+    eval_steps = ceil(num_steps / experiment.num_evals_per_epoch)
 
     common_training_args = dict(
         # Required arg:
@@ -230,7 +238,7 @@ def _create_trainer(
         fp16=False,
         bf16=_bf16(),
         eval_strategy="steps",
-        eval_steps=100,
+        eval_steps=eval_steps,
         seed=experiment.seed,
         save_strategy="no",
         use_mps_device=False,
