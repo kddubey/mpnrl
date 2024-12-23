@@ -62,7 +62,7 @@ class Experiment(BaseModel):
     )
     num_train_epochs: int = Field(default=1)
     num_evals_per_epoch: int = Field(
-        default=5,
+        default=4,
         description=(
             "Number of times to compute the loss on validation data (and, if "
             "applicable, run the validation evaluator)."
@@ -86,12 +86,8 @@ class Experiment(BaseModel):
             "Number of training observations to subsample. Will select the first N."
         ),
     )
-    dataset_size_val: Optional[int] = Field(
-        default=None,
-        description=(
-            "If dataset_split_val is not provided, then this number of validation "
-            "observations will be randomly subsampled from the training set."
-        ),
+    dataset_size_val: int = Field(
+        default=1_000, description="Number of validation observations."
     )
 
     # Model
@@ -115,14 +111,6 @@ class Experiment(BaseModel):
             raise ValueError("The training and val splits must be different.")
         return self
 
-    @model_validator(mode="after")
-    def check_val_dataset(self):
-        if (self.dataset_split_val is None) == (self.dataset_size_val is None):
-            raise TypeError(
-                "Exactly one of dataset_split_val or dataset_size_val must be provided."
-            )
-        return self
-
 
 def _train_val_datasets(experiment: Experiment) -> tuple[Dataset, Dataset]:
     load_dataset_ = partial(
@@ -142,6 +130,8 @@ def _train_val_datasets(experiment: Experiment) -> tuple[Dataset, Dataset]:
 
     if experiment.dataset_size_train is not None:
         train_dataset = train_dataset.select(range(experiment.dataset_size_train))
+    if experiment.dataset_size_val is not None:
+        val_dataset = val_dataset.select(range(experiment.dataset_size_val))
 
     return train_dataset, val_dataset
 
