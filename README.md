@@ -11,6 +11,13 @@ performance, but I'll need to run many more experiments.
 python -m pip install git+https://github.com/kddubey/mpnrl.git
 ```
 
+To run [`./run.py`](./run.py):
+
+```
+python -m pip install "mpnrl[demos] @ git+https://github.com/kddubey/mpnrl.git"
+```
+
+
 NOTE: this isn't meant to be a stable Python package. There are many TODOs.
 
 
