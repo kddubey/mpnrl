@@ -62,7 +62,7 @@ class Experiment(BaseModel):
     )
     num_train_epochs: int = Field(default=1)
     num_evals_per_epoch: int = Field(
-        default=4,
+        default=0,
         description=(
             "Number of times to compute the loss on validation data (and, if "
             "applicable, run the validation evaluator)."
