@@ -116,22 +116,22 @@ def _train_val_datasets(experiment: Experiment) -> tuple[Dataset, Dataset]:
     load_dataset_ = partial(
         load_dataset, path=experiment.dataset_name, name=experiment.dataset_config
     )
+
     train_dataset = load_dataset_(split=experiment.dataset_split_train)
+    if experiment.dataset_size_train is not None:
+        train_dataset = train_dataset.select(range(experiment.dataset_size_train))
 
     # Load validation data. Split it off train if it's not explicitly provided
     if experiment.dataset_split_val is not None:
         val_dataset = load_dataset_(split=experiment.dataset_split_val)
+        if experiment.dataset_size_val is not None:
+            val_dataset = val_dataset.select(range(experiment.dataset_size_val))
     else:
         dataset_dict = train_dataset.train_test_split(
             test_size=experiment.dataset_size_val, seed=experiment.seed
         )
         train_dataset: Dataset = dataset_dict["train"]
         val_dataset: Dataset = dataset_dict["test"]
-
-    if experiment.dataset_size_train is not None:
-        train_dataset = train_dataset.select(range(experiment.dataset_size_train))
-    if experiment.dataset_size_val is not None:
-        val_dataset = val_dataset.select(range(experiment.dataset_size_val))
 
     return train_dataset, val_dataset
 
@@ -182,8 +182,10 @@ def _trainer_args(
     return custom_args, trainer_args
 
 
-def _stsb_evaluator(split: str):
+def _stsb_evaluator(split: str, experiment: Experiment):
     stsb_eval_dataset = load_dataset("sentence-transformers/stsb", split=split)
+    if split == "validation":
+        stsb_eval_dataset = stsb_eval_dataset.select(range(experiment.dataset_size_val))
     return EmbeddingSimilarityEvaluator(
         sentences1=stsb_eval_dataset["sentence1"],
         sentences2=stsb_eval_dataset["sentence2"],
@@ -195,12 +197,12 @@ def _stsb_evaluator(split: str):
 
 
 # Values are callables so that data loading only happens when needed.
-dataset_name_to_val_evaluator_creator: dict[str, Callable[[], SentenceEvaluator]] = {
-    "sentence-transformers/all-nli": partial(_stsb_evaluator, split="validation")
-}
-dataset_name_to_test_evaluator_creator: dict[str, Callable[[], SentenceEvaluator]] = {
-    "sentence-transformers/all-nli": partial(_stsb_evaluator, split="test")
-}
+dataset_name_to_val_evaluator_creator: dict[
+    str, Callable[[Any, Experiment], SentenceEvaluator]
+] = {"sentence-transformers/all-nli": partial(_stsb_evaluator, "validation")}
+dataset_name_to_test_evaluator_creator: dict[
+    str, Callable[[Any, Experiment], SentenceEvaluator]
+] = {"sentence-transformers/all-nli": partial(_stsb_evaluator, "test")}
 
 
 def _create_trainer(
@@ -243,7 +245,7 @@ def _create_trainer(
     val_evaluator_creator = dataset_name_to_val_evaluator_creator.get(
         experiment.dataset_name, lambda: None
     )
-    val_evaluator = val_evaluator_creator()
+    val_evaluator = val_evaluator_creator(experiment)
 
     trainer = SentenceTransformerTrainer(
         model=model,
@@ -324,10 +326,6 @@ def _save_results(
     result_train: TrainOutput,
     result_test: dict[str, float],
 ):
-    if result_cuda_memory.snapshot is not None:  # experiment was run on a CUDA machine
-        with open(os.path.join(results_dir, "cuda_snapshot.pkl"), "wb") as f:
-            pickle.dump(result_cuda_memory.snapshot, f)
-
     metrics = {
         "train_output": result_train._asdict(),
         "cuda_peak_memory_gb": {
@@ -337,6 +335,12 @@ def _save_results(
         "test_output": result_test,
     }
     _dump_dict_to_json(metrics, os.path.join(results_dir, "metrics.json"))
+
+    if result_cuda_memory.snapshot is None:  # experiment was run on non-CUDA
+        return
+    print("\n*********************** Saving CUDA snapshot ***********************\n")
+    with open(os.path.join(results_dir, "cuda_snapshot.pkl"), "wb") as f:
+        pickle.dump(result_cuda_memory.snapshot, f)
 
 
 def run(experiment: Experiment):
@@ -354,7 +358,10 @@ def run(experiment: Experiment):
         result_train: TrainOutput = trainer.train()
 
     print("\n********************* Evaluating on the test set *********************\n")
-    test_evaluator = dataset_name_to_test_evaluator_creator[experiment.dataset_name]()
+    test_evaluator_creator = dataset_name_to_test_evaluator_creator[
+        experiment.dataset_name
+    ]
+    test_evaluator = test_evaluator_creator(experiment)
     result_test = test_evaluator(
         model, output_path=os.path.join(results_dir, "test_evaluator")
     )
