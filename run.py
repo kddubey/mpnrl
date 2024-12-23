@@ -344,9 +344,10 @@ def _save_results(
 
     if result_cuda_memory.snapshot is None:  # experiment was run on non-CUDA
         return
-    print("\n*********************** Saving CUDA snapshot ***********************\n")
+    print("\n************************ Saving CUDA snapshot ************************\n")
     with open(os.path.join(results_dir, "cuda_snapshot.pkl"), "wb") as f:
         pickle.dump(result_cuda_memory.snapshot, f)
+    print("\n******************************** Done. ********************************\n")
 
 
 def run(experiment: Experiment):
