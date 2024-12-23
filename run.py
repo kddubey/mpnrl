@@ -6,6 +6,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from functools import partial
 import json
+from math import ceil
 import os
 import pickle
 from typing import Any, Callable, Iterable, Literal, Optional, get_args
@@ -96,6 +97,9 @@ class Experiment(BaseModel):
     wandb_project: str = Field(
         default="mpnrl",
         description="Name of the Wandb project to log training and eval info to.",
+    )
+    num_steps_to_log: int = Field(
+        default=50, description="Number of times to log training info."
     )
 
     @model_validator(mode="after")
@@ -211,6 +215,10 @@ def _create_trainer(
     results_dir: str,
 ):
     output_dir = os.path.join(results_dir, "trainer")
+
+    num_steps = len(train_dataset) // experiment.per_device_train_batch_size
+    logging_steps = ceil(num_steps / experiment.num_steps_to_log)
+
     common_training_args = dict(
         # Required arg:
         output_dir=output_dir,
@@ -228,7 +236,7 @@ def _create_trainer(
         use_mps_device=False,
         # Wandb
         report_to="wandb",
-        logging_steps=100,
+        logging_steps=logging_steps,
     )
     custom_args, trainer_args = _trainer_args(experiment, model, train_dataset)
     # For Wandb
