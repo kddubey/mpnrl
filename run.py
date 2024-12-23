@@ -173,7 +173,7 @@ def _trainer_args(
                 ),
             )
         case _:
-            raise NotImplementedError(
+            raise ValueError(
                 f"{experiment.loss} not supported. Input one of: "
                 f'{" ".join(get_args(Experiment.model_fields["loss"].annotation))}'
             )
@@ -210,11 +210,10 @@ def _create_trainer(
     run_id: str,
     results_dir: str,
 ):
+    output_dir = os.path.join(results_dir, "trainer")
     common_training_args = dict(
         # Required arg:
-        output_dir=os.path.join(
-            results_dir, "trainer"
-        ),  # TODO: check if we need anything from here
+        output_dir=output_dir,
         # Optional args:
         num_train_epochs=experiment.num_train_epochs,
         per_device_train_batch_size=experiment.per_device_train_batch_size,
@@ -222,11 +221,14 @@ def _create_trainer(
         warmup_ratio=0.1,
         fp16=False,
         bf16=_bf16(),
+        eval_strategy="steps",
+        eval_steps=100,
         seed=experiment.seed,
+        save_strategy="no",
         use_mps_device=False,
         # Wandb
         report_to="wandb",
-        logging_steps=1,
+        logging_steps=100,
     )
     custom_args, trainer_args = _trainer_args(experiment, model, train_dataset)
     # For Wandb
@@ -297,8 +299,10 @@ def _set_up_run(experiment: Experiment):
         f"batch_size_{experiment.per_device_train_batch_size}",
     )
     # Upload experiment settings
-    os.makedirs(run_id)
-    _dump_dict_to_json(experiment.model_dump(), os.path.join(run_id, "experiment.json"))
+    os.makedirs(results_dir)
+    _dump_dict_to_json(
+        experiment.model_dump(), os.path.join(results_dir, "experiment.json")
+    )
 
     print()
     print(f"{run_id=}")
@@ -351,6 +355,8 @@ def run(experiment: Experiment):
     print(result_test)
 
     _save_results(results_dir, result_cuda_memory, result_train, result_test)
+    if not os.listdir(trainer.args.output_dir):
+        os.rmdir(trainer.args.output_dir)
 
     return run_id
 
