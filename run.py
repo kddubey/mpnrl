@@ -69,6 +69,7 @@ class Experiment(BaseModel):
         ),
     )
     seed: int = Field(default=42)
+    disable_cuda_memory_snapshot: bool = Field(default=True)
 
     # Dataset
     dataset_name: str = Field(description="Name of a HF dataset.")
@@ -277,19 +278,20 @@ class _CUDAMemoryStats(BaseModel):
 
 
 @contextmanager
-def _track_cuda_memory():
+def _track_cuda_memory(disable: bool = False):
     # TODO: maybe use the torch profiler
+    enable = (not disable) and torch.cuda.is_available()
     try:
         cuda_memory_stats = _CUDAMemoryStats()
 
-        if torch.cuda.is_available():
+        if enable:
             torch.cuda.reset_peak_memory_stats()
             # Tell CUDA to start recording memory allocations
             torch.cuda.memory._record_memory_history(enabled="all")
 
         yield cuda_memory_stats
     finally:
-        if torch.cuda.is_available():
+        if enable:
             bytes_per_gb = 1024**3
             cuda_memory_stats.peak_memory_allocated_gb = (
                 torch.cuda.max_memory_allocated() / bytes_per_gb
@@ -361,7 +363,9 @@ def run(experiment: Experiment):
     trainer = _create_trainer(
         experiment, model, train_dataset, val_dataset, run_id, results_dir
     )
-    with _track_cuda_memory() as result_cuda_memory:
+    with _track_cuda_memory(
+        disable=experiment.disable_cuda_memory_snapshot
+    ) as result_cuda_memory:
         result_train: TrainOutput = trainer.train()
 
     print("\n********************* Evaluating on the test set *********************\n")
@@ -375,6 +379,7 @@ def run(experiment: Experiment):
     print(result_test)
 
     _save_results(results_dir, result_cuda_memory, result_train, result_test)
+
     if not os.listdir(trainer.args.output_dir):
         os.rmdir(trainer.args.output_dir)
 
