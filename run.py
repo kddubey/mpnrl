@@ -73,7 +73,9 @@ class Experiment(BaseModel):
 
     # Dataset
     dataset_name: str = Field(description="Name of a HF dataset.")
-    dataset_config: Optional[str] = Field(default=None)
+    dataset_config: Optional[str] = Field(
+        default=None, description="Config/subset name in HF."
+    )
     dataset_split_train: Optional[str] = Field(
         default="train", description="Training split name in HF."
     )
@@ -84,11 +86,11 @@ class Experiment(BaseModel):
     dataset_size_train: Optional[int] = Field(
         default=None,
         description=(
-            "Number of training observations to subsample. Will select the first N."
+            "Number of training records to subsample. Will select the first N."
         ),
     )
     dataset_size_val: int = Field(
-        default=1_000, description="Number of validation observations."
+        default=1_000, description="Number of validation records."
     )
 
     # Model
@@ -387,7 +389,7 @@ def run(experiment: Experiment):
 
 
 if __name__ == "__main__":
-    experiment = tapify(Experiment)
+    experiment = tapify(Experiment, description=__doc__)
     print(experiment)
 
     os.environ["WANDB_PROJECT"] = experiment.wandb_project
