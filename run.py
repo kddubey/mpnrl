@@ -164,7 +164,7 @@ def _trainer_args(
                 data_collator=None,
             )
         case "mpnrl":
-            from mpnrl.collator import MPNRLDataCollator
+            from mpnrl.collator import GroupingDataCollator
             from mpnrl.loss import MultiplePositivesNegativesRankingLoss
 
             custom_args = dict(
@@ -172,7 +172,7 @@ def _trainer_args(
             )
             trainer_args = dict(
                 loss=MultiplePositivesNegativesRankingLoss(model),
-                data_collator=MPNRLDataCollator(
+                data_collator=GroupingDataCollator(
                     train_dataset, tokenize_fn=model.tokenize
                 ),
             )

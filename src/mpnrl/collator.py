@@ -20,7 +20,7 @@ def group_positives_by_anchor(
     return anchor_to_positives
 
 
-class MPNRLDataCollator(SentenceTransformerDataCollator):
+class GroupingDataCollator(SentenceTransformerDataCollator):
     def __init__(self, dataset: Iterable[dict[str, str]], *args, **kwargs):
         super().__init__(*args, **kwargs)
         # TODO: SentenceTransformerDataCollator actually assumes that first is anchor,

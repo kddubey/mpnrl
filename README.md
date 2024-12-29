@@ -103,7 +103,7 @@ trainer = SentenceTransformerTrainer(
         batch_sampler=BatchSamplers.BATCH_SAMPLER,
     ),
     loss=mpnrl.loss.MultiplePositivesNegativesRankingLoss(model),
-    data_collator=mpnrl.collator.MPNRLDataCollator(
+    data_collator=mpnrl.collator.GroupingDataCollator(
         train_dataset, tokenize_fn=model.tokenize
     ),
 )

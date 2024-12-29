@@ -23,7 +23,7 @@ from sentence_transformers.training_args import BatchSamplers
 from tap import tapify
 from tqdm.auto import tqdm
 
-from mpnrl.collator import MPNRLDataCollator
+from mpnrl.collator import GroupingDataCollator
 from mpnrl.loss import MultiplePositivesNegativesRankingLoss
 
 sns.set_theme(style="darkgrid")
@@ -172,7 +172,7 @@ def main(
         ),
         train_dataset=train_dataset,
         loss=MultiplePositivesNegativesRankingLoss(model),
-        data_collator=MPNRLDataCollator(train_dataset, tokenize_fn=model.tokenize),
+        data_collator=GroupingDataCollator(train_dataset, tokenize_fn=model.tokenize),
     )
     batch_data_mpnrl = dry_run(dummy_trainer_mpnrl)
 
