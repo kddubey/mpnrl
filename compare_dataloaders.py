@@ -96,7 +96,7 @@ def main(
     dataset_size_train: Optional[int] = None,
     dataset_config: Optional[str] = None,
     dataset_split_train: Optional[str] = "train",
-    seed: Optional[int] = 42,
+    seed: Optional[int] = None,
 ):
     """
     Parameters
@@ -113,7 +113,7 @@ def main(
         Training split name in HF., by default "train"
     seed : Optional[int], optional
         If given, the training data will be shuffled before subsampling
-        `dataset_size_train` records, by default 42
+        `dataset_size_train` records, by default no shuffling (take the first)
     """
     # if there are already plots saved here, raise an error
     if os.path.exists("dataloader_mnrl.png") or os.path.exists("dataloader_mpnrl.png"):

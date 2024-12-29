@@ -23,7 +23,8 @@ python compare_dataloaders.py \
     --dataset_config "triplet" \
     --dataset_split "train" \
     --batch_size 128 \
-    --dataset_size_train 10000
+    --dataset_size_train 10000 \
+    --seed 42
 ```
 
 </details>
