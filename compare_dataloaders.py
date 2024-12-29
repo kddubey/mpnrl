@@ -130,7 +130,9 @@ def main(
 
     # Subsample
     dataset_size_train = (
-        len(train_dataset) if dataset_size_train is None else dataset_size_train
+        len(train_dataset)
+        if dataset_size_train is None
+        else min(dataset_size_train, len(train_dataset))
     )
     if seed is not None:
         generator = np.random.default_rng(seed=seed)
