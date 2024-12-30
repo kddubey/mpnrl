@@ -10,29 +10,37 @@ from sentence_transformers.data_collator import SentenceTransformerDataCollator
 
 
 def group_positives_by_anchor(
-    dataset: Iterable[dict[str, str]],
+    dataset: Iterable[dict[str, str]], anchor_name: str, positive_name: str
 ) -> dict[str, dict[str, None]]:
     anchor_to_positives = defaultdict(dict)
     # Using a dict to de-duplicate. Not using a set so that positives are in a
     # deterministic (insertion) order.
     for record in dataset:
-        anchor_to_positives[record["anchor"]][record["positive"]] = None
+        anchor_to_positives[record[anchor_name]][record[positive_name]] = None
     return anchor_to_positives
 
 
 class GroupingDataCollator(SentenceTransformerDataCollator):
+    """
+    A data collator that groups positives by the anchor.
+
+    As assumed in SentenceTransformers, the first column is the anchor, the second is
+    the positive, and the rest are negatives.
+    """
+
     def __init__(self, dataset: Iterable[dict[str, str]], *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # TODO: SentenceTransformerDataCollator actually assumes that first is anchor,
-        # next is positive, rest are negative, regardless of the actual column names.
-        # Here, we assume they're labeled "anchor", "positive", "negative".
-        self.anchor_to_positives = group_positives_by_anchor(dataset)
+        first_record = next(iter(dataset))
+        self.column_names = list(first_record.keys())
+        self.anchor_name, self.positive_name = self.column_names[:2]
+        self.anchor_to_positives = group_positives_by_anchor(
+            dataset, self.anchor_name, self.positive_name
+        )
 
     def __call__(self, features: list[dict[str, str]]):
+        anchors = list({record[self.anchor_name]: None for record in features})
+        positives = list({record[self.positive_name]: None for record in features})
         # Using a dict for deterministic (insertion) order.
-        anchors = list({record["anchor"]: None for record in features})
-        positives = list({record["positive"]: None for record in features})
-
         positive_idxs = [
             [
                 j
@@ -45,18 +53,21 @@ class GroupingDataCollator(SentenceTransformerDataCollator):
         # anchors[i]. It's structured like this (instead of, e.g., a flat list of (i, j)
         # pairs) b/c it may be useful to batch by anchors later.
 
-        # TODO: this is gettin hacky
-        batch = (
-            super().__call__([{"anchor": anchor} for anchor in anchors])
-            | super().__call__([{"positive": positive} for positive in positives])
-            | (
-                {}
-                if "negative" not in features[0]
-                else super().__call__(
-                    [{"negative": record["negative"]} for record in features]
-                )
+        collate = super().__call__
+        batch = {
+            key: value
+            for column_name in self.column_names
+            for key, value in (
+                collate(
+                    [
+                        {column_name: text}
+                        for text in list(
+                            {record[column_name]: None for record in features}
+                        )
+                    ]
+                ).items()
             )
-        )
+        }
         batch["label"] = positive_idxs
         return batch
 
