@@ -90,11 +90,7 @@ from sentence_transformers import SentenceTransformerTrainer
 import mpnrl
 
 model = ...
-train_dataset = ...
-# Iterable of these records:
-#   {"anchor": ..., "positive": ...}
-# Can also have negatives:
-#   {"anchor": ..., "positive": ..., "negative": ...}
+train_dataset = ...  # records of {"anchor": ..., "positive": ..., "negative"(s): ...}
 
 trainer = SentenceTransformerTrainer(
     model=...,
