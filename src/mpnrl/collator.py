@@ -7,6 +7,7 @@ from collections import defaultdict
 from typing import Iterable
 
 from sentence_transformers.data_collator import SentenceTransformerDataCollator
+import torch
 
 
 def group_positives_by_anchor(
@@ -24,6 +25,9 @@ class GroupingDataCollator(SentenceTransformerDataCollator):
 
     As assumed in SentenceTransformers, for every record, the first entry is the anchor,
     the second is the positive, and the rest are negatives.
+
+    Currently, it only makes sense to use this collator with
+    `MultiplePositivesNegativesRankingLoss`.
     """
 
     def __init__(self, dataset: Iterable[dict[str, str]], *args, **kwargs):
@@ -35,28 +39,32 @@ class GroupingDataCollator(SentenceTransformerDataCollator):
             dataset, self.anchor_name, self.positive_name
         )
 
-    def __call__(self, features: list[dict[str, str]]):
+    def __call__(
+        self, features: list[dict[str, str]]
+    ) -> dict[str, torch.Tensor | list[list[int]]]:
         # Sentence features
         tokenize_and_name_encodings = super().__call__
         batch = {
-            encoding_name: encoding_value  # e.g., "anchor_input_ids": [...]
+            encoding_name: encoding_value
+            # e.g., "anchor_input_ids": torch.Tensor([[...], ..., [...]])
             for column_name in self.column_names
             for encoding_name, encoding_value in (
                 tokenize_and_name_encodings(
                     [
                         {column_name: text}
-                        for text in list(
-                            {record[column_name]: None for record in features}
-                            # Using a dict for deterministic (insertion) order.
-                        )
+                        for text in {record[column_name]: None for record in features}
+                        # Using a dict for deterministic (insertion) order.
                     ]
                 ).items()
             )
         }
+        # NOTE: SentenceTransformerTrainer.collect_features will group this data by the
+        # prefix of each key.
 
         # Labels
-        anchors = list({record[self.anchor_name]: None for record in features})
-        positives = list({record[self.positive_name]: None for record in features})
+        anchors = {record[self.anchor_name]: None for record in features}
+        positives = {record[self.positive_name]: None for record in features}
+        # These are in the same (insertion) order as above.
         positive_idxs = [
             [
                 j

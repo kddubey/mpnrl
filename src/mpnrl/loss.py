@@ -2,7 +2,7 @@
 Sigmoid-style loss, i.e., assumes the classifications are independent.
 """
 
-from typing import Any, Iterable
+from typing import Any, Iterable, Sequence
 
 from sentence_transformers import SentenceTransformer, util
 import torch
@@ -26,7 +26,9 @@ class MultiplePositivesNegativesRankingLoss(torch.nn.Module):
         self.bce_with_logits_loss = torch.nn.BCEWithLogitsLoss(reduction="mean")
 
     def forward(
-        self, sentence_features: Iterable[dict[str, torch.Tensor]], labels: torch.Tensor
+        self,
+        sentence_features: Iterable[dict[str, torch.Tensor]],
+        labels: Sequence[Sequence[int]],
     ) -> torch.Tensor:
         # Compute the embeddings and distribute them to anchor and candidates (positive and optionally negatives)
         embeddings = [
@@ -45,7 +47,7 @@ class MultiplePositivesNegativesRankingLoss(torch.nn.Module):
         ) + self.bias
         # (batch_size, batch_size * (1 + num_negatives))
 
-        positive_pairs: list[list[int]] = labels
+        positive_pairs = labels
         labels = torch.zeros_like(scores)
         for i, positive_indices in enumerate(positive_pairs):
             for j in positive_indices:
