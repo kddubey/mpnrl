@@ -85,16 +85,21 @@ Make sure to **not** use the no-duplicates sampler for MPNRL.
 
 ```python
 from sentence_transformers.sampler import BatchSamplers
-from sentence_transformers import SentenceTransformerTrainer
+from sentence_transformers import (
+    SentenceTransformer,
+    SentenceTransformerTrainer,
+)
 
 import mpnrl
 
-model = ...
-train_dataset = ...  # records of {"anchor": ..., "positive": ..., "negative"(s): ...}
+model = SentenceTransformer("your-model")
+
+train_dataset = ...
+# records of {"anchor": ..., "positive": ..., "negative"(s): ...}
 
 trainer = SentenceTransformerTrainer(
-    model=...,
-    train_dataset=...,
+    model=model
+    train_dataset=train_dataset,
     args=SentenceTransformerTrainingArguments(
         ...
         batch_sampler=BatchSamplers.BATCH_SAMPLER,

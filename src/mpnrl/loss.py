@@ -30,7 +30,8 @@ class MultiplePositivesNegativesRankingLoss(torch.nn.Module):
         sentence_features: Iterable[dict[str, torch.Tensor]],
         labels: Sequence[Sequence[int]],
     ) -> torch.Tensor:
-        # Compute the embeddings and distribute them to anchor and candidates (positive and optionally negatives)
+        # Compute the embeddings and distribute them to anchor and candidates (positive
+        # and optionally negatives)
         embeddings = [
             self.model(sentence_feature)["sentence_embedding"]
             for sentence_feature in sentence_features
@@ -38,10 +39,11 @@ class MultiplePositivesNegativesRankingLoss(torch.nn.Module):
         anchors = embeddings[0]  # (batch_size, embedding_dim)
         candidates = torch.cat(
             embeddings[1:]
-        )  # (batch_size * (1 + num_negatives), embedding_dim)
+        )  # (num_positives + num_negatives), embedding_dim)
 
-        # For every anchor, we compute the similarity to all other candidates (positives and negatives),
-        # also from other anchors. This gives us a lot of in-batch negatives.
+        # For every anchor, we compute the similarity to all other candidates (positives
+        # and negatives), also from other anchors. This gives us a lot of in-batch
+        # negatives.
         scores: torch.Tensor = (
             self.similarity_fct(anchors, candidates) * self.scale
         ) + self.bias

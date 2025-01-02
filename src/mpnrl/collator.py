@@ -24,7 +24,7 @@ class GroupingDataCollator(SentenceTransformerDataCollator):
     A data collator that groups positives by the anchor.
 
     As assumed in SentenceTransformers, for every record, the first entry is the anchor,
-    the second is the positive, and the rest are negatives.
+    the second is the positive, and the rest (optional) are negatives.
 
     Currently, it only makes sense to use this collator with
     `MultiplePositivesNegativesRankingLoss`.
