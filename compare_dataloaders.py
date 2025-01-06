@@ -80,7 +80,7 @@ def plot(
         value_name="Value",
     )
     ax = sns.lineplot(data=melted_df, x="batch", y="Value", hue="Type")
-    ax.set_ylim(0, ax.get_ylim()[1])
+    ax.set_ylim(0, max(ax.get_ylim()[1], batch_size * 1.1))
     ax.axhline(
         y=batch_size, color="gray", linestyle="dotted", label="inputted batch size"
     )
@@ -124,10 +124,10 @@ def main(
 
     model = SentenceTransformer("distilroberta-base")
     # Just need a dummy model. hardcoding it.
+
     train_dataset = load_dataset(
         dataset_name, name=dataset_config, split=dataset_split_train
     )
-
     # Subsample
     dataset_size_train = (
         len(train_dataset)
