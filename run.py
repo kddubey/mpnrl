@@ -80,7 +80,9 @@ class Experiment(BaseModel):
         default=None,
         description=(
             "Validation/development split name in HF. If not provided, the training "
-            "split will be split into training and validation splits."
+            "split will be split into training and validation splits. Note that, by "
+            "default, num_evals_per_epoch is 0, so there will be no validation by "
+            "default."
         ),
     )
     dataset_size_train: Optional[int] = Field(
@@ -115,7 +117,7 @@ class Experiment(BaseModel):
         return self
 
 
-def _train_val_datasets(experiment: Experiment) -> tuple[Dataset, Dataset]:
+def _train_val_datasets(experiment: Experiment) -> tuple[Dataset, Dataset | None]:
     load_dataset_ = partial(
         load_dataset, path=experiment.dataset_name, name=experiment.dataset_config
     )
@@ -123,6 +125,9 @@ def _train_val_datasets(experiment: Experiment) -> tuple[Dataset, Dataset]:
     train_dataset = load_dataset_(split=experiment.dataset_split_train)
     if experiment.dataset_size_train is not None:
         train_dataset = train_dataset.select(range(experiment.dataset_size_train))
+
+    if experiment.num_evals_per_epoch <= 0:
+        return train_dataset, None
 
     # Load validation data. Split it off train if it's not explicitly provided
     if experiment.dataset_split_val is not None:
@@ -260,7 +265,7 @@ def _create_trainer(
     experiment: Experiment,
     model: SentenceTransformer,
     train_dataset: Dataset,
-    val_dataset: Dataset,
+    val_dataset: Dataset | None,
     run_id: str,
     results_dir: str,
 ):
