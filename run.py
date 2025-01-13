@@ -78,7 +78,10 @@ class Experiment(BaseModel):
     )
     dataset_split_val: Optional[str] = Field(
         default=None,
-        description="Validation/development split name in HF.",
+        description=(
+            "Validation/development split name in HF. If not provided, the training "
+            "split will be split into training and validation splits."
+        ),
     )
     dataset_size_train: Optional[int] = Field(
         default=None,
@@ -396,7 +399,6 @@ def _save_results(
     print("\n************************ Saving CUDA snapshot ************************\n")
     with open(os.path.join(results_dir, "cuda_snapshot.pkl"), "wb") as f:
         pickle.dump(result_cuda_memory.snapshot, f)
-    print("\n******************************** Done. ********************************\n")
 
 
 def run(experiment: Experiment):
