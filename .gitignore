@@ -3,3 +3,5 @@
 *.egg-info/
 __pycache__/
 snapshot_*.pickle
+wandb/
+run-*-cpu-test/
