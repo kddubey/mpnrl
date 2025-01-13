@@ -57,7 +57,10 @@ def dry_run(trainer: SentenceTransformerTrainer) -> list[dict[str, Any]]:
 
 
 def plot(
-    batch_data: list[dict[str, Any]], batch_size: int, title: str = ""
+    batch_data: list[dict[str, Any]],
+    batch_size: int,
+    title: str = "",
+    num_batch_ticks: int = 5,
 ) -> plt.Axes:
     df = (
         pl.DataFrame(batch_data)
@@ -80,6 +83,7 @@ def plot(
         value_name="Value",
     )
     ax = sns.lineplot(data=melted_df, x="batch", y="Value", hue="Type")
+    ax.set_xticks(range(1, len(df) + 1, round(len(df) / num_batch_ticks)))
     ax.set_ylim(0, max(ax.get_ylim()[1], batch_size * 1.1))
     ax.axhline(
         y=batch_size, color="gray", linestyle="dotted", label="inputted batch size"
@@ -146,7 +150,7 @@ def main(
 
     output_dir = "_output"  # won't get created b/c we never train
 
-    print("Dry running the MNRL dataloader")
+    print("\nDry running the MNRL dataloader")
     dummy_trainer_mnrl = SentenceTransformerTrainer(
         model=model,
         args=SentenceTransformerTrainingArguments(
@@ -162,7 +166,7 @@ def main(
     )
     batch_data_mnrl = dry_run(dummy_trainer_mnrl)
 
-    print("Dry running the MPNRL dataloader")
+    print("\nDry running the MPNRL dataloader")
     dummy_trainer_mpnrl = SentenceTransformerTrainer(
         model=model,
         args=SentenceTransformerTrainingArguments(
@@ -181,15 +185,12 @@ def main(
     def sum_key(data: list[dict[str, Any]], key: str) -> int:
         return sum(batch_data[key] for batch_data in data)
 
-    print("MNRL")
+    print("\nMNRL")
     print(f'total #    anchors: {sum_key(batch_data_mnrl, "num_anchors")}')
     print(f'total # candidates: {sum_key(batch_data_mnrl, "num_candidates")}')
     # If skewed, it's prolly the case that the dataloader for MNRL didn't process all of
     # the inputted training data b/c it stops after `num_batches` steps.
-
-    print("\n" + ("-" * os.get_terminal_size().columns) + "\n")
-
-    print("MPNRL")
+    print("\nMPNRL")
     print(f'total #    anchors: {sum_key(batch_data_mpnrl, "num_anchors")}')
     print(f'total # candidates: {sum_key(batch_data_mpnrl, "num_candidates")}')
 
