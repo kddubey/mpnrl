@@ -333,8 +333,7 @@ def _track_cuda_memory(disable: bool = False):
         if enable:
             torch.cuda.reset_peak_memory_stats()
             # Tell CUDA to start recording memory allocations
-            # TODO: "state" or "all"? Pretty sure "state" is all I need
-            torch.cuda.memory._record_memory_history(enabled="state")
+            torch.cuda.memory._record_memory_history(enabled="all")
 
         yield cuda_memory_stats
     finally:
