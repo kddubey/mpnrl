@@ -127,7 +127,8 @@ def _train_val_datasets(experiment: Experiment) -> tuple[Dataset, Dataset | None
 
     train_dataset = load_dataset_(split=experiment.dataset_split_train)
     if experiment.dataset_size_train is not None:
-        train_dataset = train_dataset.select(range(experiment.dataset_size_train))
+        num_selected = min(len(train_dataset), experiment.dataset_size_train)
+        train_dataset = train_dataset.select(range(num_selected))
 
     if experiment.num_evals_per_epoch <= 0:
         return train_dataset, None
@@ -136,7 +137,8 @@ def _train_val_datasets(experiment: Experiment) -> tuple[Dataset, Dataset | None
     if experiment.dataset_split_val is not None:
         val_dataset = load_dataset_(split=experiment.dataset_split_val)
         if experiment.dataset_size_val is not None:
-            val_dataset = val_dataset.select(range(experiment.dataset_size_val))
+            num_selected = min(len(val_dataset), experiment.dataset_size_val)
+            val_dataset = val_dataset.select(range(num_selected))
     else:
         dataset_dict = train_dataset.train_test_split(
             test_size=experiment.dataset_size_val, seed=experiment.seed
@@ -204,7 +206,8 @@ def _trainer_args(
 def _stsb_evaluator(split: str, experiment: Experiment):
     stsb_eval_dataset = load_dataset("sentence-transformers/stsb", split=split)
     if split == "validation":
-        stsb_eval_dataset = stsb_eval_dataset.select(range(experiment.dataset_size_val))
+        num_selected = min(len(stsb_eval_dataset), experiment.dataset_size_val)
+        stsb_eval_dataset = stsb_eval_dataset.select(range(num_selected))
     return evaluation.EmbeddingSimilarityEvaluator(
         sentences1=stsb_eval_dataset["sentence1"],
         sentences2=stsb_eval_dataset["sentence2"],
