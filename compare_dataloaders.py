@@ -60,7 +60,7 @@ def plot(
     batch_data: list[dict[str, Any]],
     batch_size: int,
     title: str = "",
-    num_batch_ticks: int = 5,
+    num_batch_ticks: int | None = None,
 ) -> plt.Axes:
     df = (
         pl.DataFrame(batch_data)
@@ -83,7 +83,9 @@ def plot(
         value_name="Value",
     )
     ax = sns.lineplot(data=melted_df, x="batch", y="Value", hue="Type")
-    ax.set_xticks(range(1, len(df) + 1, round(len(df) / num_batch_ticks)))
+    if num_batch_ticks is None:
+        num_batch_ticks = len(df) // 2
+    ax.set_xticks(range(2, len(df) + 1, round(len(df) / num_batch_ticks)))
     ax.set_ylim(0, max(ax.get_ylim()[1], batch_size * 1.1))
     ax.axhline(
         y=batch_size, color="gray", linestyle="dotted", label="inputted batch size"
@@ -101,6 +103,7 @@ def main(
     dataset_config: Optional[str] = None,
     dataset_split_train: Optional[str] = "train",
     seed: Optional[int] = None,
+    num_batch_ticks: Optional[int] = None,
 ):
     """
     Parameters
@@ -118,6 +121,8 @@ def main(
     seed : Optional[int], optional
         If given, the training data will be shuffled before subsampling
         `dataset_size_train` records, by default no shuffling (take the first)
+    num_batch_ticks : Optional[int], optional
+        If given, the number of x-axis ticks to display in the plot
     """
     # if there are already plots saved here, raise an error
     if os.path.exists("dataloader_mnrl.png") or os.path.exists("dataloader_mpnrl.png"):
@@ -196,12 +201,22 @@ def main(
 
     print()
 
-    ax_mnrl = plot(batch_data_mnrl, batch_size, title=f"{dataset_name} - MNRL")
+    ax_mnrl = plot(
+        batch_data_mnrl,
+        batch_size,
+        title=f"{dataset_name} - MNRL",
+        num_batch_ticks=num_batch_ticks,
+    )
     print("Saving MNRL plot to dataloader_mnrl.png")
     ax_mnrl.get_figure().savefig("dataloader_mnrl.png")
     plt.close(ax_mnrl.get_figure())
 
-    ax_mpnrl = plot(batch_data_mpnrl, batch_size, title=f"{dataset_name} - MPNRL")
+    ax_mpnrl = plot(
+        batch_data_mpnrl,
+        batch_size,
+        title=f"{dataset_name} - MPNRL",
+        num_batch_ticks=num_batch_ticks,
+    )
     print("Saving MPNRL plot to dataloader_mpnrl.png")
     ax_mpnrl.get_figure().savefig("dataloader_mpnrl.png")
     plt.close(ax_mpnrl.get_figure())
