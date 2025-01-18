@@ -90,7 +90,7 @@ def plot(
     ax.axhline(
         y=batch_size, color="gray", linestyle="dotted", label="inputted batch size"
     )
-    ax.set_ylabel("# observations")
+    ax.set_ylabel("size")
     ax.set_title(title)
     ax.legend()
     return ax
