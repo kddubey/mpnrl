@@ -191,7 +191,9 @@ def _trainer_args(
             )
             trainer_args = dict(
                 loss=losses.CachedMultipleNegativesRankingLoss(
-                    model, mini_batch_size=experiment.mini_batch_size
+                    model,
+                    mini_batch_size=experiment.mini_batch_size,
+                    show_progress_bar=True,
                 ),
             )
         case _:
