@@ -43,8 +43,8 @@ class Experiment(BaseModel):
         ),
     )
 
-    loss: Literal["mpnrl", "mnrl"] = Field(
-        description="MPNRL is sigmoid-based. MNRL is softmax-based."
+    loss: Literal["mpnrl", "mnrl", "cmnrl"] = Field(
+        description="MPNRL is sigmoid-based. MNRL is softmax-based. c = cached."
     )
 
     # Trainer
@@ -53,6 +53,9 @@ class Experiment(BaseModel):
             "Maximum number of anchors to sample per batch (may not be unique for "
             "MPNRL, and may not be reached for MNRL)."
         )
+    )
+    mini_batch_size: int = Field(
+        default=32, description="Mini/sub batch size for cached losses."
     )
     per_device_eval_batch_size: int = Field(
         default=32, description="Number of pairs to sample per batch during evaluation."
@@ -166,7 +169,6 @@ def _trainer_args(
             )
             trainer_args = dict(
                 loss=losses.MultipleNegativesRankingLoss(model),
-                data_collator=None,
             )
         case "mpnrl":
             from mpnrl.collator import GroupingDataCollator
@@ -179,6 +181,15 @@ def _trainer_args(
                 loss=MultiplePositivesNegativesRankingLoss(model),
                 data_collator=GroupingDataCollator(
                     train_dataset, tokenize_fn=model.tokenize
+                ),
+            )
+        case "cmnrl":
+            custom_args = dict(
+                batch_sampler=BatchSamplers.NO_DUPLICATES,
+            )
+            trainer_args = dict(
+                loss=losses.CachedMultipleNegativesRankingLoss(
+                    model, mini_batch_size=experiment.mini_batch_size
                 ),
             )
         case _:
