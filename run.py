@@ -171,8 +171,8 @@ def _trainer_args(
                 loss=losses.MultipleNegativesRankingLoss(model),
             )
         case "mpnrl":
-            from mpnrl.collator import GroupingDataCollator
-            from mpnrl.loss import MultiplePositivesNegativesRankingLoss
+            from mpnrl.data_collator import GroupingDataCollator
+            from mpnrl.losses import MultiplePositivesNegativesRankingLoss
 
             custom_args = dict(
                 batch_sampler=BatchSamplers.BATCH_SAMPLER,

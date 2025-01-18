@@ -1,7 +1,3 @@
-"""
-Sigmoid-style loss, i.e., assumes the classifications are independent.
-"""
-
 from typing import Any, Iterable, Sequence
 
 from sentence_transformers import SentenceTransformer, util
@@ -9,6 +5,10 @@ import torch
 
 
 class MultiplePositivesNegativesRankingLoss(torch.nn.Module):
+    """
+    Sigmoid-style loss, i.e., assumes the classifications are independent.
+    """
+
     def __init__(
         self,
         model: SentenceTransformer,

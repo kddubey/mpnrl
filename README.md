@@ -104,8 +104,8 @@ trainer = SentenceTransformerTrainer(
         ...
         batch_sampler=BatchSamplers.BATCH_SAMPLER,
     ),
-    loss=mpnrl.loss.MultiplePositivesNegativesRankingLoss(model),
-    data_collator=mpnrl.collator.GroupingDataCollator(
+    loss=mpnrl.losses.MultiplePositivesNegativesRankingLoss(model),
+    data_collator=mpnrl.data_collator.GroupingDataCollator(
         train_dataset, tokenize_fn=model.tokenize
     ),
 )

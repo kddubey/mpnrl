@@ -23,8 +23,8 @@ from sentence_transformers.training_args import BatchSamplers
 from tap import tapify
 from tqdm.auto import tqdm
 
-from mpnrl.collator import GroupingDataCollator
-from mpnrl.loss import MultiplePositivesNegativesRankingLoss
+from mpnrl.data_collator import GroupingDataCollator
+from mpnrl.losses import MultiplePositivesNegativesRankingLoss
 
 sns.set_theme(style="darkgrid")
 
